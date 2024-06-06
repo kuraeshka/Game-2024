@@ -5,6 +5,7 @@ import random
 import time
 
 wn = turtle.Screen()
+wn.setup(650,650)
 wn.bgcolor("Black")
 wn.title("Space monster")
 wn.bgpic("background.gif")
@@ -18,7 +19,6 @@ wn.register_shape("booleat.gif")
 wn.register_shape("blocks.gif")
 wn.register_shape("shield.gif")
 # Музыка-------------------------
-music_state = "ON"
 # Рамка--------------------------
 borden_pen = turtle.Turtle()
 borden_pen.speed(0)
@@ -36,7 +36,7 @@ score = 8
 score_pen = turtle.Turtle()
 score_pen.color("yellow")
 score_pen.penup()
-score_pen.setposition(225, 300)
+score_pen.setposition(225, 302)
 scorestrig = "Врагов: {}".format(score)
 score_pen.write(scorestrig, False, align="left", font=("Arial", 14, "normal"))
 score_pen.hideturtle()
@@ -47,7 +47,7 @@ timeformat = 'Время {}:{}'.format(mins,secs)
 time_pen = turtle.Turtle()
 time_pen.color("white")
 time_pen.penup()
-time_pen.setposition(-40,300)
+time_pen.setposition(-40,302)
 time_pen.write(timeformat, False, align="Left", font=("Arial", 14, "normal"))
 time_pen.hideturtle()
 # Таймер обеъкт------------------
@@ -220,29 +220,6 @@ def move_player():
     if x > 280:
         x = 280
     player.setx(x)
-def music():
-    if music_state == "ON":
-        music_OFF()
-    if music_state == "OFF":
-        music_ON()
-def music_ON():
-    music_state ="ON"
-    music_enemy = turtle.Turtle()
-    music_enemy.speed(0)
-    music_enemy.penup()
-    music_enemy.setposition(320, -50)
-    music_enemy.shape("square")
-    music_enemy.color("green")
-    music_enemy.shapesize(1.5, 1.5)
-def music_OFF():
-    music_state ="OFF"
-    music_enemy = turtle.Turtle()
-    music_enemy.speed(0)
-    music_enemy.penup()
-    music_enemy.setposition(300, -50)
-    music_enemy.shape("square")
-    music_enemy.color("red")
-    music_enemy.shapesize(1.5, 1.5)
 #Огонь из оружия-------------------
 def fire_booleat():
     global booleatstate
@@ -272,7 +249,6 @@ def collision(t1,t2):
 #Клавиатура-------------------------
 wn.listen()
 wn.onkeypress(fire_booleat,"w")
-wn.onkeypress(music,"e")
 #Игра геймплей----------------------
 while True:
     if startstate == "start":
