@@ -11,6 +11,7 @@ wn.title("Space monster")
 wn.bgpic("background.gif")
 wn.tracer(0)
 # Добавление текстур-------------
+wn.register_shape("player.gif")
 wn.register_shape("enemy.1.gif")
 wn.register_shape("boss.gif")
 wn.register_shape("background.gif")
@@ -134,7 +135,7 @@ bossstate = "stand"
 
 # Игрок--------------------------
 player = turtle.Turtle()
-player.shape("square")
+player.shape("player.gif")
 player.color("white")
 player.penup()
 player.speed(0)
