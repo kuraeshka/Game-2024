@@ -133,6 +133,34 @@ bossspeed = 0.3
 boss.hideturtle()
 bosslife = 3
 bossstate = "stand"
+# Хп бар босса-------------------
+#1
+Boss_bar1 = turtle.Turtle()
+Boss_bar1.shape("square")
+Boss_bar1.shapesize(1.5,4)
+Boss_bar1.color("red")
+Boss_bar1.penup()
+Boss_bar1.setposition(-80,250)
+Boss_bar1.speed = 0
+Boss_bar1.hideturtle()
+#2
+Boss_bar2 = turtle.Turtle()
+Boss_bar2.shape("square")
+Boss_bar2.shapesize(1.5,4)
+Boss_bar2.color("red")
+Boss_bar2.penup()
+Boss_bar2.setposition(0,250)
+Boss_bar2.speed = 0
+Boss_bar2.hideturtle()
+#3
+Boss_bar3 = turtle.Turtle()
+Boss_bar3.shape("square")
+Boss_bar3.shapesize(1.5,4)
+Boss_bar3.color("red")
+Boss_bar3.penup()
+Boss_bar3.setposition(80,250)
+Boss_bar3.speed = 0
+Boss_bar3.hideturtle()
 
 # Игрок--------------------------
 player = turtle.Turtle()
@@ -149,10 +177,13 @@ booleat_robot = turtle.Turtle()
 booleat_robot.shape("EnemyBooleat.gif")
 booleat_robot.penup()
 booleat_robot.speed(0)
-booleat_robot.setposition(0,5000)
+booleat_robot.setposition(0,280)
 booleat_robot.setheading(270)
 booleat_robot.speed = 0
+booleat_robot_speed = -4
 booleat_robotstate = "ready"
+Booleat_robor_time = 0
+booleat_robot.hideturtle()
 
 # Оружие робота-------------------
 gun_number = 8
@@ -208,6 +239,7 @@ booleat.lt(90)
 booleatspeed = 4
 booleat.hideturtle()
 booleatstate = "ready"
+
 # Передвижение игрока-------------
 def move_left():
     player.speed = -1.5
@@ -236,7 +268,7 @@ def fire_booleat_robot():
     if booleat_robotstate == "ready":
         booleat_robotstate = "fire"
         x = player.xcor()
-        y = player.ycor() + 10
+        y = 280
         booleat_robot.setposition(x,y)
         booleat_robot.showturtle()
 #Колизия----------------------------
@@ -246,7 +278,12 @@ def collision(t1,t2):
         return True
     else:
         return False
-
+def collision1(t1,t2):
+    distanes = math.sqrt(math.pow(t1.xcor()-t2.xcor(),2)+math.pow(t1.ycor()-t2.ycor(),2))
+    if distanes < 50:
+        return True
+    else:
+        return False
 #Клавиатура-------------------------
 wn.listen()
 wn.onkeypress(fire_booleat,"w")
@@ -366,6 +403,7 @@ while True:
         if time_enemy.xcor()>50:
             time_enemyspeed *=-1
             timesec -=1
+            Booleat_robor_time +=1
             time_pen.clear()
             mins, secs = divmod(timesec, 60)
             timeformat = 'Время {}:{}'.format(mins, secs)
@@ -374,13 +412,26 @@ while True:
             time_enemyspeed *=-1
             timesec -=1
             time_pen.clear()
+            Booleat_robor_time +=1
             mins, secs = divmod(timesec, 60)
             timeformat = 'Время {}:{}'.format(mins, secs)
             time_pen.write(timeformat, False, align="Left", font=("Arial", 14, "normal"))
         if timesec == 0:
             exit()
+        # Пули роботов-------------------
+        if Booleat_robor_time == 10:
+            fire_booleat_robot()
+            Booleat_robor_time = 0
+        for shield_player in shield_players:
+            if collision1(shield_player, booleat_robot):
+                booleat_robot.hideturtle()
+                booleat_robotstate = "ready"
+                booleat_robot.setposition(0, -280)
         # Появление босса-----------------
         if score == 0:
+            Boss_bar3.showturtle()
+            Boss_bar2.showturtle()
+            Boss_bar1.showturtle()
             bossstate = "ready"
             score = 8
             scorestrig = "Врагов: {}".format(score)
@@ -399,8 +450,14 @@ while True:
             if boss.xcor() < -280:
                 bossspeed *= -1
 
-        # Колизия босса-------------------
+        #Колизия босса-------------------
         if collision(booleat, boss):
+            if bosslife == 3:
+                Boss_bar3.setposition(0,5000)
+            if bosslife == 2:
+                Boss_bar2.setposition(0,5000)
+            if bosslife == 1:
+                Boss_bar1.setposition(0,5000)
             bosslife -= 1
             booleat.hideturtle()
             booleatstate = "ready"
@@ -454,10 +511,13 @@ while True:
     if booleat.ycor() > 280:
         booleat.hideturtle()
         booleatstate = "ready"
+    # Пуля робота------------------------
     if booleat_robotstate == "fire":
         y = booleat_robot.ycor()
-        y += booleatspeed
+        y += booleat_robot_speed
+        x = player.xcor()
         booleat_robot.sety(y)
-    if booleat_robot.ycor() > 280:
+        booleat_robot.setx(x)
+    if booleat_robot.ycor() < -280:
         booleat_robot.hideturtle()
         booleat_robotstate = "ready"
