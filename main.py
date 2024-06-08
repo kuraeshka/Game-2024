@@ -6,11 +6,14 @@ import time
 
 wn = turtle.Screen()
 wn.setup(650,650)
-wn.bgcolor("Black")
 wn.title("Space monster")
 wn.bgpic("background.gif")
 wn.tracer(0)
 # Добавление текстур-------------
+wn.register_shape("player.1.gif")
+wn.register_shape("Pobeda.gif")
+wn.register_shape("start.gif")
+wn.register_shape("EnemyBooleat.gif")
 wn.register_shape("player.gif")
 wn.register_shape("enemy.1.gif")
 wn.register_shape("boss.gif")
@@ -65,16 +68,14 @@ time_enemy.hideturtle()
 win_pen = turtle.Turtle()
 win_pen.penup()
 win_pen.setposition(0, 3000)
-win_pen.color("white")
+win_pen.shape("Pobeda.gif")
 win_pen.hideturtle()
 # Старт--------------------------
 start_pen = turtle.Turtle()
 start_pen.penup()
 start_pen.setposition(50,0)
 start_pen.color("white")
-startstring = "Старт"
-start_pen.write(startstring, False, align="right", font=("Arial", 30, "normal"))
-start_pen.hideturtle()
+start_pen.shape("start.gif")
 startstate = "start"
 start_pen.setposition(0,0)
 
@@ -135,8 +136,7 @@ bossstate = "stand"
 
 # Игрок--------------------------
 player = turtle.Turtle()
-player.shape("player.gif")
-player.color("white")
+player.shape("player.1.gif")
 player.penup()
 player.speed(0)
 player.setposition(0,-250)
@@ -146,13 +146,13 @@ player_x = 0
 
 # Пули робота--------------------
 booleat_robot = turtle.Turtle()
-booleat_robot.shape("classic")
-booleat_robot.color("white")
+booleat_robot.shape("EnemyBooleat.gif")
 booleat_robot.penup()
 booleat_robot.speed(0)
 booleat_robot.setposition(0,5000)
 booleat_robot.setheading(270)
 booleat_robot.speed = 0
+booleat_robotstate = "ready"
 
 # Оружие робота-------------------
 gun_number = 8
@@ -186,7 +186,7 @@ enemy_set_x = -225
 enemy_set_y = 5000
 enemy_number = 0
 for enemy in enemies:
-        enemy.shape("enemy.1.gif")
+        enemy.shape("player.gif")
         enemy.penup()
         enemy.speed(0)
         x = enemy_set_x + (70*enemy_number)
@@ -231,18 +231,18 @@ def fire_booleat():
         booleat.setposition(x,y)
         booleat.showturtle()
 #Огонь из оржуия читы--------------
-def fire_booleat_sea():
-    global booleat_sea_state
-    if booleat_sea_state == "ready":
-        booleat_sea_state = "fire"
+def fire_booleat_robot():
+    global booleat_robotstate
+    if booleat_robotstate == "ready":
+        booleat_robotstate = "fire"
         x = player.xcor()
         y = player.ycor() + 10
-        booleat_sea.setposition(x,y)
-        booleat_sea.showturtle()
+        booleat_robot.setposition(x,y)
+        booleat_robot.showturtle()
 #Колизия----------------------------
 def collision(t1,t2):
     distanes = math.sqrt(math.pow(t1.xcor()-t2.xcor(),2)+math.pow(t1.ycor()-t2.ycor(),2))
-    if distanes < 15:
+    if distanes < 20:
         return True
     else:
         return False
@@ -281,13 +281,13 @@ while True:
             x += enemyspeed
             enemy.setx(x)
 
-            if enemy.xcor() > 280:
+            if enemy.xcor() > 275:
                 for e in enemies:
                     y = e.ycor()
                     y -= 15
                     e.sety(y)
                 enemyspeed *= -1
-            if enemy.xcor() < -280:
+            if enemy.xcor() < -275:
                 for e in enemies:
                     y = e.ycor()
                     y -= 15
@@ -310,7 +310,7 @@ while True:
                 enemy.hideturtle()
                 print("Поражение")
                 exit()
-            if enemy.ycor() < 0:
+            if enemy.ycor() < 25:
                 for shield_enemy in shield_enemies:
                     shield_enemy.sety(1000)
         # Оружие роботов-----------------------
@@ -319,13 +319,13 @@ while True:
             x += enemy_gun_speed
             gun.setx(x)
 
-            if gun.xcor() > 280:
+            if gun.xcor() > 275:
                 for gun in guns:
                     y = gun.ycor()
                     y -= 15
                     gun.sety(y)
                 enemy_gun_speed *= -1
-            if gun.xcor() < -280:
+            if gun.xcor() < -275:
                 for gun in guns:
                     y = gun.ycor()
                     y -= 15
@@ -343,10 +343,10 @@ while True:
             x +=shield_enemyspeed
             shield_enemy.setx(x)
 
-            if shield_enemy.xcor() > 280:
+            if shield_enemy.xcor() > 275:
                 for e in shield_enemies:
                     shield_enemyspeed *= -1
-            if shield_enemy.xcor() < -280:
+            if shield_enemy.xcor() < -275:
                 for e in shield_enemies:
                     shield_enemyspeed *= -1
             # Колизия столкновения с щитом --
@@ -415,9 +415,8 @@ while True:
             time_pen.setposition(-40, -60)
             time_enemy.setposition(0, 0)
             time_pen.write(timeformat, False, align="Left", font=("Arial", 14, "normal"))
-            win_pen.setposition(52, 0)
-            win_pen.write("Победа", False, align="right", font=("Arial", 20, "normal"))
-            win_pen.setposition(0,0)
+            win_pen.showturtle()
+            win_pen.setposition(0, 0)
             score_pen.clear()
             timestate = "over"
             player.speed = 0
@@ -455,3 +454,10 @@ while True:
     if booleat.ycor() > 280:
         booleat.hideturtle()
         booleatstate = "ready"
+    if booleat_robotstate == "fire":
+        y = booleat_robot.ycor()
+        y += booleatspeed
+        booleat_robot.sety(y)
+    if booleat_robot.ycor() > 280:
+        booleat_robot.hideturtle()
+        booleat_robotstate = "ready"
