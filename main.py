@@ -1,8 +1,5 @@
 import turtle
-import os
 import math
-import random
-import time
 
 wn = turtle.Screen()
 wn.setup(650,650)
@@ -10,12 +7,15 @@ wn.title("Space monster")
 wn.bgpic("background.gif")
 wn.tracer(0)
 # Добавление текстур-------------
+wn.register_shape("porajenie.gif")
+wn.register_shape("Boss_start_booleat.gif")
+wn.register_shape("bossbooleat.gif")
+wn.register_shape("Player.death.gif")
 wn.register_shape("player.1.gif")
 wn.register_shape("Pobeda.gif")
 wn.register_shape("start.gif")
 wn.register_shape("EnemyBooleat.gif")
 wn.register_shape("player.gif")
-wn.register_shape("enemy.1.gif")
 wn.register_shape("boss.gif")
 wn.register_shape("background.gif")
 wn.register_shape("gunenemy.gif")
@@ -70,6 +70,14 @@ win_pen.penup()
 win_pen.setposition(0, 3000)
 win_pen.shape("Pobeda.gif")
 win_pen.hideturtle()
+# -------------------------------
+gamestats = "win"
+# Поражение----------------------
+por_pen = turtle.Turtle()
+por_pen.penup()
+por_pen.setposition(0,3000)
+por_pen.shape("porajenie.gif")
+por_pen.hideturtle()
 # Старт--------------------------
 start_pen = turtle.Turtle()
 start_pen.penup()
@@ -131,36 +139,70 @@ boss.speed(0)
 boss.setposition(0,5000)
 bossspeed = 0.3
 boss.hideturtle()
-bosslife = 3
+bosslife = 5
 bossstate = "stand"
 # Хп бар босса-------------------
 #1
 Boss_bar1 = turtle.Turtle()
 Boss_bar1.shape("square")
-Boss_bar1.shapesize(1.5,4)
+Boss_bar1.shapesize(1,3)
 Boss_bar1.color("red")
 Boss_bar1.penup()
-Boss_bar1.setposition(-80,250)
+Boss_bar1.setposition(-120,250)
 Boss_bar1.speed = 0
 Boss_bar1.hideturtle()
 #2
 Boss_bar2 = turtle.Turtle()
 Boss_bar2.shape("square")
-Boss_bar2.shapesize(1.5,4)
+Boss_bar2.shapesize(1,3)
 Boss_bar2.color("red")
 Boss_bar2.penup()
-Boss_bar2.setposition(0,250)
+Boss_bar2.setposition(-60,250)
 Boss_bar2.speed = 0
 Boss_bar2.hideturtle()
 #3
 Boss_bar3 = turtle.Turtle()
 Boss_bar3.shape("square")
-Boss_bar3.shapesize(1.5,4)
+Boss_bar3.shapesize(1,3)
 Boss_bar3.color("red")
 Boss_bar3.penup()
-Boss_bar3.setposition(80,250)
+Boss_bar3.setposition(0,250)
 Boss_bar3.speed = 0
 Boss_bar3.hideturtle()
+#4
+Boss_bar4 = turtle.Turtle()
+Boss_bar4.shape("square")
+Boss_bar4.shapesize(1,3)
+Boss_bar4.color("red")
+Boss_bar4.penup()
+Boss_bar4.setposition(60,250)
+Boss_bar4.speed = 0
+Boss_bar4.hideturtle()
+#5
+Boss_bar5 = turtle.Turtle()
+Boss_bar5.shape("square")
+Boss_bar5.shapesize(1,3)
+Boss_bar5.color("red")
+Boss_bar5.penup()
+Boss_bar5.setposition(120,250)
+Boss_bar5.speed = 0
+Boss_bar5.hideturtle()
+# Лазер босса--------------------
+Boss_lazer = turtle.Turtle()
+Boss_lazer.shape("Boss_start_booleat.gif")
+Boss_lazer.penup()
+Boss_lazer.setposition(0,5000)
+Boss_lazer.speed = 0
+Boss_lazer.hideturtle()
+Boss_lazer_time = 0
+Boss_lazer_state = "start"
+
+Boss_laz = turtle.Turtle()
+Boss_laz.shape("square")
+Boss_laz.penup()
+Boss_laz.setposition(0,5000)
+Boss_laz.speed = 0
+Boss_laz.hideturtle()
 
 # Игрок--------------------------
 player = turtle.Turtle()
@@ -171,6 +213,7 @@ player.setposition(0,-250)
 player.setheading(90)
 player.speed = 0
 player_x = 0
+playerlife_state = "korable"
 
 # Пули робота--------------------
 booleat_robot = turtle.Turtle()
@@ -180,7 +223,7 @@ booleat_robot.speed(0)
 booleat_robot.setposition(0,280)
 booleat_robot.setheading(270)
 booleat_robot.speed = 0
-booleat_robot_speed = -4
+booleat_robot_speed = -1
 booleat_robotstate = "ready"
 Booleat_robor_time = 0
 booleat_robot.hideturtle()
@@ -194,6 +237,7 @@ for i in range(gun_number):
 enemy_gun_set_x = -225
 enemy_gun_set_y = 5000
 enemy_gun_number = 0
+gun_booleat_life = 8
 for gun in guns:
         gun.shape("gunenemy.gif")
         gun.penup()
@@ -203,12 +247,11 @@ for gun in guns:
         gun.setposition(x, y)
         enemy_gun_speed = 0.2
         enemy_gun_number += 1
-        if enemy_gun_number == 8:
-            enemy_gun_set_y -= 50
-            enemy_gun_number = 0
+
 
 # Робот---------------------------
 number = 8
+enemystat = "Run"
 enemies = []
 for i in range(number):
     enemies.append(turtle.Turtle())
@@ -225,9 +268,6 @@ for enemy in enemies:
         enemy.setposition(x, y)
         enemyspeed = 0.2
         enemy_number += 1
-        if enemy_number == 8:
-            enemy_set_y -= 50
-            enemy_number = 0
 
 #Оружие--------------------------
 booleat = turtle.Turtle()
@@ -248,10 +288,10 @@ def move_right():
 def move_player():
     x = player.xcor()
     x += player.speed
-    if x < -280:
-        x = -280
-    if x > 280:
-        x = 280
+    if x < -250:
+        x = -250
+    if x > 250:
+        x = 250
     player.setx(x)
 #Огонь из оружия-------------------
 def fire_booleat():
@@ -284,6 +324,7 @@ def collision1(t1,t2):
         return True
     else:
         return False
+
 #Клавиатура-------------------------
 wn.listen()
 wn.onkeypress(fire_booleat,"w")
@@ -306,10 +347,10 @@ while True:
         for shield_player in shield_players:
             shield_player.sety(-150)
         start_pen.setposition(5000,0)
-    # Передвижение игроков----------
+# Передвижение игрока и доп команды ----------
     wn.update()
     move_player()
-    # Передвижение роботов----------
+# Передвижение роботов----------
     if startstate == "Game":
         wn.onkeypress(move_left, "a")
         wn.onkeypress(move_right, "d")
@@ -330,8 +371,15 @@ while True:
                     y -= 15
                     e.sety(y)
                 enemyspeed *= -1
-
-            # Колизия попадания по роботу
+            if enemy.ycor() < -275:
+                bossstate = "death"
+                gamestats = "lose"
+                Boss_bar5.hideturtle()
+                Boss_bar4.hideturtle()
+                Boss_bar3.hideturtle()
+                Boss_bar2.hideturtle()
+                Boss_bar1.hideturtle()
+# Колизия попадания по роботу
             if collision(booleat, enemy):
                 booleat.hideturtle()
                 booleatstate = "ready"
@@ -341,16 +389,25 @@ while True:
                 scorestrig = "Врагов: {}".format(score)
                 score_pen.clear()
                 score_pen.write(scorestrig, False, align="left", font=("Arial", 14, "normal"))
-            # Колизия стокновения игрока
+# Колизия стокновения игрока
             if collision(player, enemy):
-                player.hideturtle()
-                enemy.hideturtle()
-                print("Поражение")
-                exit()
+                bossstate = "death"
+                gamestats = "lose"
+                for shield_enemy in shield_enemies:
+                    shield_enemy.setposition(shield_enemy.xcor(),3000)
+                Boss_bar5.hideturtle()
+                Boss_bar4.hideturtle()
+                Boss_bar3.hideturtle()
+                Boss_bar2.hideturtle()
+                Boss_bar1.hideturtle()
+                enemystat = "Go"
+            if enemystat == "Go":
+                enemy.setposition(enemy.xcor(),3000)
+                enemystat = "Run"
             if enemy.ycor() < 25:
                 for shield_enemy in shield_enemies:
                     shield_enemy.sety(1000)
-        # Оружие роботов-----------------------
+# Оружие роботов-----------------------
         for gun in guns:
             x = gun.xcor()
             x += enemy_gun_speed
@@ -368,13 +425,14 @@ while True:
                     y -= 15
                     gun.sety(y)
                 enemy_gun_speed *= -1
-            # Колизия попадания по оружию
+# Колизия попадания по оружию
             if collision(booleat, gun):
                 booleat.hideturtle()
                 booleatstate = "ready"
                 booleat.setposition(0, -400)
                 gun.sety(5000)
-        # Передвижение щитов--------------
+                gun_booleat_life -=1
+# Передвижение щитов--------------
         for shield_enemy in shield_enemies:
             x = shield_enemy.xcor()
             x +=shield_enemyspeed
@@ -386,7 +444,7 @@ while True:
             if shield_enemy.xcor() < -275:
                 for e in shield_enemies:
                     shield_enemyspeed *= -1
-            # Колизия столкновения с щитом --
+# Колизия столкновения с щитом---
             if collision(shield_enemy,booleat):
                 shield_enemy_life -=1
                 booleat.hideturtle()
@@ -395,7 +453,7 @@ while True:
                 if shield_enemy_life == 0:
                     shield_enemy.sety(5000)
                     shield_enemy_life = 5
-        # Таймер--------------------------
+# Таймер--------------------------
         if timestate == "ready":
             x = time_enemy.xcor()
             x += time_enemyspeed
@@ -404,11 +462,15 @@ while True:
             time_enemyspeed *=-1
             timesec -=1
             Booleat_robor_time +=1
+            if bossstate == "ready":
+                Boss_lazer_time +=1
             time_pen.clear()
             mins, secs = divmod(timesec, 60)
             timeformat = 'Время {}:{}'.format(mins, secs)
             time_pen.write(timeformat, False, align="Left", font=("Arial", 14, "normal"))
         if time_enemy.xcor() < -50:
+            if bossstate == "ready":
+                Boss_lazer_time +=1
             time_enemyspeed *=-1
             timesec -=1
             time_pen.clear()
@@ -417,21 +479,67 @@ while True:
             timeformat = 'Время {}:{}'.format(mins, secs)
             time_pen.write(timeformat, False, align="Left", font=("Arial", 14, "normal"))
         if timesec == 0:
-            exit()
-        # Пули роботов-------------------
-        if Booleat_robor_time == 10:
-            fire_booleat_robot()
-            Booleat_robor_time = 0
-        for shield_player in shield_players:
-            if collision1(shield_player, booleat_robot):
+            bossstate = "death"
+            gamestats = "lose"
+            Boss_bar5.hideturtle()
+            Boss_bar4.hideturtle()
+            Boss_bar3.hideturtle()
+            Boss_bar2.hideturtle()
+            Boss_bar1.hideturtle()
+# Пули роботов-------------------
+        if gun_booleat_life > 0:
+            if Booleat_robor_time == 10:
+                fire_booleat_robot()
+                Booleat_robor_time = 0
+            for shield_player in shield_players:
+                if collision1(shield_player, booleat_robot):
+                    booleat_robot.hideturtle()
+                    booleat_robotstate = "ready"
+                    booleat_robot.setposition(0, -280)
+        else:
+            booleat_robot.hideturtle()
+            booleat_robotstate = "ready"
+# Колизия попадания по игроку-----
+        if collision(booleat_robot, player):
+            if playerlife_state == "player":
+                player.shape("player.1.gif")
+                bossstate = "death"
+                gamestats = "lose"
+                Boss_bar5.hideturtle()
+                Boss_bar4.hideturtle()
+                Boss_bar3.hideturtle()
+                Boss_bar2.hideturtle()
+                Boss_bar1.hideturtle()
+            if playerlife_state == "korable":
+                player.shape("Player.death.gif")
+                playerlife_state = "player"
                 booleat_robot.hideturtle()
                 booleat_robotstate = "ready"
                 booleat_robot.setposition(0, -280)
-        # Появление босса-----------------
+# Колизия востановления жизни-----
+        if playerlife_state == "player":
+            for shield_player in shield_players:
+                if collision1(booleat, shield_player):
+                    booleat_robot.hideturtle()
+                    booleat_robotstate = "ready"
+                    player.shape("player.1.gif")
+                    playerlife_state = "korable"
+                    shield_player.hideturtle()
+                    shield_player.setposition(shield_player.xcor(), 5000)
+
+# Появление босса-----------------
         if score == 0:
+            gun_booleat_life = 0
+            Boss_bar5.showturtle()
+            Boss_bar4.showturtle()
             Boss_bar3.showturtle()
             Boss_bar2.showturtle()
             Boss_bar1.showturtle()
+            player.shape("player.1.gif")
+            playerlife_state = "korable"
+            for shield_player in shield_players:
+                shield_player.hideturtle()
+                shield_player.setposition(shield_player.xcor(), 5000)
             bossstate = "ready"
             score = 8
             scorestrig = "Врагов: {}".format(score)
@@ -445,19 +553,61 @@ while True:
             x = boss.xcor()
             x += bossspeed
             boss.setx(x)
-            if boss.xcor() > 280:
+            if boss.xcor() > 200:
                 bossspeed *= -1
-            if boss.xcor() < -280:
+            if boss.xcor() < -200:
                 bossspeed *= -1
+            if 10 < Boss_lazer_time <15:
+                Boss_lazer.setposition(x, -150)
+                Boss_lazer.showturtle()
+            if 14 < Boss_lazer_time < 25:
+                Boss_lazer_state = "gun"
+                Boss_lazer.shape("bossbooleat.gif")
+                Boss_lazer.setposition(x, -150)
+                Boss_laz.setposition(x,-250)
+            if Boss_lazer_time == 25:
+                Boss_lazer.shape("Boss_start_booleat.gif")
+                Boss_lazer_state = "start"
+                Boss_lazer.setposition(x, 5000)
+                Boss_laz.setposition(x, 5000)
+                Boss_lazer.hideturtle()
+                Boss_lazer_time = 0
+        if Boss_lazer_state == "gun":
+            if collision(Boss_laz,player):
+                if playerlife_state == "korable":
+                    Boss_lazer_state = "start"
+                    playerlife_state = "player"
+                    player.shape("Player.death.gif")
+                    Boss_lazer.shape("Boss_start_booleat.gif")
+                    Boss_lazer.setposition(x, 5000)
+                    Boss_lazer.hideturtle()
+                    Boss_lazer_time = 0
+                else:
+                    if playerlife_state == "player":
+                        Boss_lazer_state = "start"
+                        Boss_lazer.shape("Boss_start_booleat.gif")
+                        Boss_lazer.setposition(x, 5000)
+                        Boss_bar5.hideturtle()
+                        Boss_bar4.hideturtle()
+                        Boss_bar3.hideturtle()
+                        Boss_bar2.hideturtle()
+                        Boss_bar1.hideturtle()
+                        bossstate = "death"
+                        gamestats = "lose"
+                        Boss_lazer_time = 0
 
-        #Колизия босса-------------------
+#Колизия босса-------------------
         if collision(booleat, boss):
+            if bosslife == 5:
+                Boss_bar5.hideturtle()
+            if bosslife == 4:
+                Boss_bar4.hideturtle()
             if bosslife == 3:
-                Boss_bar3.setposition(0,5000)
+                Boss_bar3.hideturtle()
             if bosslife == 2:
-                Boss_bar2.setposition(0,5000)
+                Boss_bar2.hideturtle()
             if bosslife == 1:
-                Boss_bar1.setposition(0,5000)
+                Boss_bar1.hideturtle()
             bosslife -= 1
             booleat.hideturtle()
             booleatstate = "ready"
@@ -465,45 +615,94 @@ while True:
             if bosslife == 0:
                 bossstate = "death"
 
-        #Конец матча-----------------------
+#Конец матча-----------------------
         if bossstate == "death":
             boss.hideturtle()
             boss.setposition(0,5000)
             time_pen.setposition(-40, -60)
             time_enemy.setposition(0, 0)
             time_pen.write(timeformat, False, align="Left", font=("Arial", 14, "normal"))
-            win_pen.showturtle()
-            win_pen.setposition(0, 0)
+            if gamestats == "lose":
+                por_pen.showturtle()
+                por_pen.setposition(0, 0)
+            if gamestats == "win":
+                win_pen.showturtle()
+                win_pen.setposition(0, 0)
             score_pen.clear()
             timestate = "over"
             player.speed = 0
             player.setposition(0, -250)
-            bosslife = 3
-        # Колизия столкновения с щитом игрока
+            bosslife = 5
+            shield_enemy_life = 5
+            booleat_robot.hideturtle()
+            booleat_robotstate = "ready"
+            booleat_robot.setposition(0,0)
+            gun_booleat_life = 8
+            Boss_lazer.setposition(0, 5000)
+            Boss_lazer.hideturtle()
+# Начало новой игры-----------------
+            if collision(booleat,por_pen):
+                playerlife_state ="korable"
+                player.shape("player.1.gif")
+                booleat.hideturtle()
+                booleatstate = "ready"
+                booleat.setposition(0, -400)
+                Booleat_robor_time = 0
+                bossstate = 'stand'
+                timesec = 180
+                timestate = "ready"
+                time_pen.clear()
+                time_pen.setposition(-40, 300)
+                mins, secs = divmod(timesec, 60)
+                timeformat = 'Время {}:{}'.format(mins, secs)
+                time_pen.write(timeformat, False, align="Left", font=("Arial", 14, "normal"))
+                por_pen.clear()
+                por_pen.setposition(0, 3000)
+                score = 8
+                scorestrig = "Врагов: {}".format(score)
+                score_pen.write(scorestrig, False, align="left", font=("Arial", 14, "normal"))
+                for enemy in enemies:
+                    enemy.sety(250)
+                for shield_enemy in shield_enemies:
+                    shield_enemy.sety(-50)
+                for gun in guns:
+                    gun.sety(215)
+                for shield_player in shield_players:
+                    shield_player.sety(-150)
+                    shield_player.showturtle()
+                gamestats = "win"
+            if collision(booleat,win_pen):
+                playerlife_state = "korable"
+                player.shape("player.1.gif")
+                booleat.hideturtle()
+                booleatstate = "ready"
+                booleat.setposition(0, -400)
+                Booleat_robor_time = 0
+                bossstate = 'stand'
+                timesec = 180
+                timestate = "ready"
+                time_pen.clear()
+                time_pen.setposition(-40, 300)
+                mins, secs = divmod(timesec, 60)
+                timeformat = 'Время {}:{}'.format(mins, secs)
+                time_pen.write(timeformat, False, align="Left", font=("Arial", 14, "normal"))
+                win_pen.clear()
+                win_pen.setposition(0, 3000)
+                gamestats = "win"
+                score = 8
+                scorestrig = "Врагов: {}".format(score)
+                score_pen.write(scorestrig, False, align="left", font=("Arial", 14, "normal"))
+                for enemy in enemies:
+                    enemy.sety(250)
+                for shield_enemy in shield_enemies:
+                    shield_enemy.sety(-50)
+                for gun in guns:
+                    gun.sety(215)
+                for shield_player in shield_players:
+                    shield_player.sety(-150)
+                    shield_player.showturtle()
 
-        # Начало новой игры-----------------
-        if collision(booleat,win_pen):
-            booleat.hideturtle()
-            booleatstate = "ready"
-            booleat.setposition(0, -400)
-            bossstate = 'stand'
-            timesec = 180
-            timestate = "ready"
-            time_pen.clear()
-            time_pen.setposition(-40, 300)
-            mins, secs = divmod(timesec, 60)
-            timeformat = 'Время {}:{}'.format(mins, secs)
-            time_pen.write(timeformat, False, align="Left", font=("Arial", 14, "normal"))
-            win_pen.clear()
-            win_pen.setposition(0, 3000)
-            score_pen.write(scorestrig, False, align="left", font=("Arial", 14, "normal"))
-            for enemy in enemies:
-                enemy.sety(250)
-            for shield_enemy in shield_enemies:
-                shield_enemy.sety(-50)
-            for gun in guns:
-                gun.sety(215)
-    # Пуля------------------------------
+# Пуля------------------------------
     if booleatstate == "fire":
         y = booleat.ycor()
         y += booleatspeed
@@ -511,7 +710,7 @@ while True:
     if booleat.ycor() > 280:
         booleat.hideturtle()
         booleatstate = "ready"
-    # Пуля робота------------------------
+# Пуля робота------------------------
     if booleat_robotstate == "fire":
         y = booleat_robot.ycor()
         y += booleat_robot_speed
